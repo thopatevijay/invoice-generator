@@ -418,6 +418,11 @@
             text-transform: uppercase;
         }
 
+        .invoice-footer-section {
+            /* Wrapper to keep summary and signatures together - no additional styles needed */
+            margin-top: 8px;
+        }
+
         .signatures {
             margin-top: auto;
             margin-bottom: 20px;
@@ -549,12 +554,13 @@
 
             .invoice {
                 border-radius: 0;
-                min-height: 100vh;
-                padding: 15px;
+                min-height: auto;
+                padding: 12px;
                 margin: 0;
                 page-break-inside: avoid;
                 display: flex;
                 flex-direction: column;
+                height: auto;
             }
 
             .invoice::before,
@@ -568,14 +574,59 @@
                 min-height: 0;
             }
 
-            .signatures {
-                margin-top: auto;
-                margin-bottom: 30px;
-                padding-top: 40px;
+            .invoice-header {
+                page-break-after: avoid;
+            }
+
+            .section {
                 page-break-inside: avoid;
-                page-break-before: auto;
+            }
+
+            .items-table {
+                page-break-inside: auto;
+            }
+
+            .items-table tr {
+                page-break-inside: avoid;
+            }
+
+            .invoice-footer-section {
+                page-break-inside: avoid;
+                page-break-after: avoid;
+            }
+
+            .summary-table {
+                page-break-inside: avoid;
+                margin-bottom: 8px;
+            }
+
+            .amount-words {
+                page-break-inside: avoid;
+                page-break-after: avoid;
+                margin-bottom: 8px;
+            }
+
+            #previewNotes {
+                page-break-after: avoid;
+            }
+
+            .signatures {
+                margin-top: 20px;
+                margin-bottom: 15px;
+                padding-top: 15px;
+                page-break-inside: avoid;
+                page-break-before: avoid;
                 page-break-after: avoid;
                 break-inside: avoid;
+            }
+
+            /* Keep footer section and signatures together */
+            .invoice-footer-section + .signatures {
+                page-break-before: avoid;
+            }
+
+            .sign-line {
+                margin-top: 35px;
             }
 
             .sign-line {
@@ -738,31 +789,33 @@
                     </div>
 
                     <!-- Summary -->
-                    <table class="summary-table">
-                        <tr>
-                            <td class="label">TOTAL</td>
-                            <td class="value" id="previewTotal">0.00</td>
-                        </tr>
-                        <tr>
-                            <td class="label">SGST @ <span id="previewSgstRate">2.5</span>%</td>
-                            <td class="value" id="previewSgstAmount">0.00</td>
-                        </tr>
-                        <tr>
-                            <td class="label">CGST @ <span id="previewCgstRate">2.5</span>%</td>
-                            <td class="value" id="previewCgstAmount">0.00</td>
-                        </tr>
-                        <tr>
-                            <td class="label">GRAND TOTAL</td>
-                            <td class="value" id="previewGrandTotal">0.00</td>
-                        </tr>
-                    </table>
+                    <div class="invoice-footer-section">
+                        <table class="summary-table">
+                            <tr>
+                                <td class="label">TOTAL</td>
+                                <td class="value" id="previewTotal">0.00/-</td>
+                            </tr>
+                            <tr>
+                                <td class="label">SGST @ <span id="previewSgstRate">2.5</span>%</td>
+                                <td class="value" id="previewSgstAmount">0.00/-</td>
+                            </tr>
+                            <tr>
+                                <td class="label">CGST @ <span id="previewCgstRate">2.5</span>%</td>
+                                <td class="value" id="previewCgstAmount">0.00/-</td>
+                            </tr>
+                            <tr>
+                                <td class="label">GRAND TOTAL</td>
+                                <td class="value" id="previewGrandTotal">0.00/-</td>
+                            </tr>
+                        </table>
 
-                    <div class="amount-words">
-                        Amount in Words: <span id="previewAmountWords">ZERO RUPEES ONLY</span>
+                        <div class="amount-words">
+                            Amount in Words: <span id="previewAmountWords">ZERO RUPEES ONLY</span>
+                        </div>
+
+                        <!-- Notes (optional) -->
+                        <div id="previewNotes"></div>
                     </div>
-
-                    <!-- Notes (optional) -->
-                    <div id="previewNotes"></div>
                 </div>
 
                 <!-- Signatures pinned at bottom -->
