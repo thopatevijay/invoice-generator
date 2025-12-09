@@ -20,8 +20,16 @@
 
         h1 {
             text-align: center;
-            margin-bottom: 16px;
+            margin-bottom: 8px;
             font-size: 20px;
+        }
+
+        .credit {
+            text-align: center;
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 16px;
+            font-style: italic;
         }
 
         .container {
@@ -183,6 +191,7 @@
         .invoice-content {
             /* wrapper for everything above signatures */
             flex: 1 0 auto;
+            min-height: 0;
         }
 
         .invoice-header {
@@ -314,7 +323,9 @@
         }
 
         .signatures {
-            margin-top: 40px;
+            margin-top: auto;
+            margin-bottom: 20px;
+            padding-top: 40px;
             display: flex;
             justify-content: space-between;
             font-size: 11px;
@@ -340,6 +351,42 @@
         #previewNotes {
             margin-top: 6px;
             font-size: 11px;
+        }
+
+        /* Error and validation styles */
+        .error-message {
+            color: #dc2626;
+            font-size: 11px;
+            margin-top: 2px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        input.error,
+        textarea.error {
+            border-color: #dc2626;
+            background-color: #fef2f2;
+        }
+
+        input:invalid {
+            box-shadow: none;
+        }
+
+        .items-form-table textarea {
+            width: 100%;
+            border-radius: 0;
+            border: none;
+            padding: 4px;
+            font-size: 12px;
+            resize: vertical;
+            min-height: 40px;
+        }
+
+        .items-form-table textarea:focus {
+            outline: none;
         }
 
         /* Responsive: mobile first behaviour */
@@ -384,10 +431,12 @@
             body {
                 background: white;
                 padding: 0;
+                margin: 0;
             }
 
             .container {
                 display: block;
+                max-width: 100%;
             }
 
             .form-card {
@@ -397,15 +446,55 @@
             .invoice-wrapper {
                 box-shadow: none;
                 padding: 0;
+                margin: 0;
             }
 
             .invoice {
                 border-radius: 0;
                 min-height: 100vh;
+                padding: 15px;
+                margin: 0;
+                page-break-inside: avoid;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .invoice-content {
+                page-break-inside: avoid;
+                flex: 1 0 auto;
+                min-height: 0;
+            }
+
+            .signatures {
+                margin-top: auto;
+                margin-bottom: 30px;
+                padding-top: 40px;
+                page-break-inside: avoid;
+                page-break-before: auto;
+                page-break-after: avoid;
+                break-inside: avoid;
+            }
+
+            .sign-line {
+                margin-top: 40px;
+            }
+
+            .section {
+                page-break-inside: avoid;
+            }
+
+            .items-table {
+                page-break-inside: auto;
+            }
+
+            .items-table tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
             }
 
             button,
-            h1 {
+            h1,
+            .credit {
                 display: none;
             }
         }
@@ -414,6 +503,7 @@
 
 <body>
     <h1>Invoice Generator</h1>
+    <div class="credit">made by VIJAY THOPATE</div>
 
     <div class="container">
         <!-- Left: Form -->
@@ -422,22 +512,26 @@
 
             <div class="form-group">
                 <label for="invoiceNumber">Invoice No.</label>
-                <input id="invoiceNumber" type="text" placeholder="044" />
+                <input id="invoiceNumber" type="text" placeholder="044" aria-required="false" aria-label="Invoice number" />
+                <div class="error-message" id="invoiceNumberError"></div>
             </div>
 
             <div class="form-group">
                 <label for="invoiceDate">Date</label>
-                <input id="invoiceDate" type="date" />
+                <input id="invoiceDate" type="date" aria-required="false" aria-label="Invoice date" />
+                <div class="error-message" id="invoiceDateError"></div>
             </div>
 
             <div class="form-group">
                 <label for="customerName">Customer Name</label>
-                <input id="customerName" type="text" placeholder="Customer Name" />
+                <input id="customerName" type="text" placeholder="Customer Name" aria-required="false" aria-label="Customer name" />
+                <div class="error-message" id="customerNameError"></div>
             </div>
 
             <div class="form-group">
                 <label for="customerDetails">Address / Contact</label>
-                <textarea id="customerDetails" placeholder="Address, Mobile"></textarea>
+                <textarea id="customerDetails" placeholder="Address, Mobile" aria-required="false" aria-label="Customer address and contact details"></textarea>
+                <div class="error-message" id="customerDetailsError"></div>
             </div>
 
             <hr style="margin: 8px 0; border-color: #e5e7eb;" />
@@ -459,25 +553,27 @@
                         <!-- Rows added by JS -->
                     </tbody>
                 </table>
-                <button type="button" class="add-row-btn" onclick="addItemRow()">+ Add Item</button>
+                <button type="button" class="add-row-btn" onclick="addItemRow()" aria-label="Add new item row">+ Add Item</button>
                 <div class="small-note">Amount will be calculated as Rate × Qty for each row.</div>
             </div>
 
             <div class="form-group">
                 <label for="taxRate">GST Rate (split equally as SGST & CGST)</label>
-                <input id="taxRate" type="number" step="0.1" value="5" />
+                <input id="taxRate" type="number" step="0.1" min="0" max="100" value="5" aria-required="false" aria-label="GST tax rate percentage" />
                 <div class="small-note">Example: 5 = SGST 2.5% + CGST 2.5%</div>
+                <div class="error-message" id="taxRateError"></div>
             </div>
 
             <div class="form-group">
                 <label for="notes">Notes (optional)</label>
-                <textarea id="notes" placeholder="Thank you for your business."></textarea>
+                <textarea id="notes" placeholder="Thank you for your business." aria-label="Additional notes for invoice"></textarea>
             </div>
 
             <div class="button-row">
-                <button class="btn-primary" type="button" onclick="generateInvoice()">Generate Invoice</button>
-                <button class="btn-secondary" type="button" onclick="printInvoice()">Print / Save as PDF</button>
-                <button class="btn-secondary" type="button" onclick="resetForm()">Clear</button>
+                <button class="btn-primary" type="button" onclick="generateInvoice()" aria-label="Generate invoice preview">Generate Invoice</button>
+                <button class="btn-secondary" type="button" onclick="printInvoice()" aria-label="Print or save invoice as PDF">Print / Save as PDF</button>
+                <button class="btn-secondary" type="button" onclick="saveInvoice()" aria-label="Save invoice with unique filename">Save Invoice</button>
+                <button class="btn-secondary" type="button" onclick="resetForm()" aria-label="Clear all form fields">Clear</button>
             </div>
         </div>
 
@@ -578,9 +674,186 @@
     </div>
 
     <script>
+        /**
+         * Sanitizes HTML to prevent XSS attacks
+         * @param {string} str - String to sanitize
+         * @returns {string} - Sanitized string safe for textContent
+         */
+        function sanitizeHTML(str) {
+            if (typeof str !== 'string') return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        /**
+         * Escapes HTML entities for safe insertion
+         * @param {string} str - String to escape
+         * @returns {string} - Escaped string
+         */
+        function escapeHTML(str) {
+            if (typeof str !== 'string') return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return str.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        /**
+         * Shows error message for a field
+         * @param {string} fieldId - ID of the input field
+         * @param {string} message - Error message to display
+         */
+        function showError(fieldId, message) {
+            const input = document.getElementById(fieldId);
+            const errorDiv = document.getElementById(fieldId + 'Error');
+            if (input && errorDiv) {
+                input.classList.add('error');
+                errorDiv.textContent = message;
+                errorDiv.classList.add('show');
+            }
+        }
+
+        /**
+         * Clears error message for a field
+         * @param {string} fieldId - ID of the input field
+         */
+        function clearError(fieldId) {
+            const input = document.getElementById(fieldId);
+            const errorDiv = document.getElementById(fieldId + 'Error');
+            if (input && errorDiv) {
+                input.classList.remove('error');
+                errorDiv.classList.remove('show');
+                errorDiv.textContent = '';
+            }
+        }
+
+        /**
+         * Validates invoice number
+         * @param {string} value - Invoice number value
+         * @returns {boolean} - True if valid
+         */
+        function validateInvoiceNumber(value) {
+            if (!value || value.trim() === '') {
+                return true; // Optional field
+            }
+            if (value.length > 50) {
+                showError('invoiceNumber', 'Invoice number must be 50 characters or less');
+                return false;
+            }
+            clearError('invoiceNumber');
+            return true;
+        }
+
+        /**
+         * Validates date
+         * @param {string} value - Date value
+         * @returns {boolean} - True if valid
+         */
+        function validateDate(value) {
+            if (!value) {
+                return true; // Will be auto-filled
+            }
+            try {
+                const date = new Date(value);
+                if (isNaN(date.getTime())) {
+                    showError('invoiceDate', 'Invalid date format');
+                    return false;
+                }
+                // Check if date is not too far in the future (e.g., 100 years)
+                const maxDate = new Date();
+                maxDate.setFullYear(maxDate.getFullYear() + 100);
+                if (date > maxDate) {
+                    showError('invoiceDate', 'Date cannot be more than 100 years in the future');
+                    return false;
+                }
+                clearError('invoiceDate');
+                return true;
+            } catch (e) {
+                showError('invoiceDate', 'Invalid date');
+                return false;
+            }
+        }
+
+        /**
+         * Validates customer name
+         * @param {string} value - Customer name value
+         * @returns {boolean} - True if valid
+         */
+        function validateCustomerName(value) {
+            if (!value || value.trim() === '') {
+                return true; // Optional field
+            }
+            if (value.length > 200) {
+                showError('customerName', 'Customer name must be 200 characters or less');
+                return false;
+            }
+            clearError('customerName');
+            return true;
+        }
+
+        /**
+         * Validates tax rate
+         * @param {number} value - Tax rate value
+         * @returns {boolean} - True if valid
+         */
+        function validateTaxRate(value) {
+            const num = parseFloat(value);
+            if (isNaN(num)) {
+                showError('taxRate', 'Tax rate must be a valid number');
+                return false;
+            }
+            if (num < 0) {
+                showError('taxRate', 'Tax rate cannot be negative');
+                return false;
+            }
+            if (num > 100) {
+                showError('taxRate', 'Tax rate cannot exceed 100%');
+                return false;
+            }
+            clearError('taxRate');
+            return true;
+        }
+
+        /**
+         * Validates item rate
+         * @param {number} value - Rate value
+         * @returns {boolean} - True if valid
+         */
+        function validateItemRate(value) {
+            const num = parseFloat(value);
+            if (isNaN(num) || num < 0) {
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * Validates item quantity
+         * @param {number} value - Quantity value
+         * @returns {boolean} - True if valid
+         */
+        function validateItemQty(value) {
+            const num = parseFloat(value);
+            if (isNaN(num) || num < 0) {
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * Formats a number as currency with 2 decimal places
+         * @param {number|string} value - Value to format
+         * @returns {string} - Formatted currency string
+         */
         function formatCurrency(value) {
             const num = parseFloat(value || 0);
-            return num.toFixed(2);
+            if (isNaN(num)) return '0.00';
+            return Math.max(0, num).toFixed(2);
         }
 
         function reindexItems() {
@@ -594,16 +867,25 @@
         }
 
         function removeItemRow(button) {
-            const row = button.closest("tr");
-            const tbody = document.getElementById("itemRows");
-            if (tbody.children.length > 1) {
-                row.remove();
-                reindexItems();
-                generateInvoice(false);
-            } else {
-                // If only one row, just clear its inputs
-                row.querySelectorAll("input").forEach(input => (input.value = ""));
-                generateInvoice(false);
+            try {
+                const row = button.closest("tr");
+                const tbody = document.getElementById("itemRows");
+                if (!row || !tbody) return;
+                
+                if (tbody.children.length > 1) {
+                    row.remove();
+                    reindexItems();
+                    generateInvoice(false);
+                } else {
+                    // If only one row, just clear its inputs
+                    row.querySelectorAll("input, textarea").forEach(input => {
+                        input.value = "";
+                        input.classList.remove('error');
+                    });
+                    generateInvoice(false);
+                }
+            } catch (error) {
+                console.error("Error removing item row:", error);
             }
         }
 
@@ -611,24 +893,55 @@
             const tbody = document.getElementById("itemRows");
             const rowIndex = tbody.children.length + 1;
             const tr = document.createElement("tr");
+            tr.setAttribute('role', 'row');
+            tr.setAttribute('aria-label', `Item row ${rowIndex}`);
+
+            // Sanitize inputs to prevent XSS
+            const safeParticulars = escapeHTML(particulars);
+            const safeHsn = escapeHTML(hsn);
+            const safeRate = escapeHTML(String(rate));
+            const safeQty = escapeHTML(String(qty || 1));
 
             tr.innerHTML = `
-        <td class="text-center">${rowIndex}</td>
-        <td>
-  <textarea class="item-particulars" placeholder="Enter product, model, serial no., etc.">${particulars}</textarea>
-</td>
-
-        <td><input type="text" class="item-hsn" value="${hsn}"></td>
-        <td><input type="number" class="item-rate" step="0.01" value="${rate}"></td>
-        <td><input type="number" class="item-qty" step="1" min="0" value="${qty || 1}"></td>
-        <td class="text-center">
-          <button type="button" class="remove-item-btn" onclick="removeItemRow(this)">✕</button>
+        <td class="text-center" role="gridcell">${rowIndex}</td>
+        <td role="gridcell">
+          <textarea class="item-particulars" placeholder="Enter product, model, serial no., etc." aria-label="Item particulars for row ${rowIndex}">${safeParticulars}</textarea>
+        </td>
+        <td role="gridcell">
+          <input type="text" class="item-hsn" value="${safeHsn}" aria-label="HSN code for row ${rowIndex}">
+        </td>
+        <td role="gridcell">
+          <input type="number" class="item-rate" step="0.01" min="0" value="${safeRate}" aria-label="Rate for row ${rowIndex}">
+        </td>
+        <td role="gridcell">
+          <input type="number" class="item-qty" step="1" min="0" value="${safeQty}" aria-label="Quantity for row ${rowIndex}">
+        </td>
+        <td class="text-center" role="gridcell">
+          <button type="button" class="remove-item-btn" onclick="removeItemRow(this)" aria-label="Remove item row ${rowIndex}">✕</button>
         </td>
       `;
             tbody.appendChild(tr);
 
-            tr.querySelectorAll("input").forEach(input => {
+            // Add event listeners to all inputs and textareas
+            tr.querySelectorAll("input, textarea").forEach(input => {
                 input.addEventListener("input", () => {
+                    // Validate numeric inputs
+                    if (input.classList.contains('item-rate')) {
+                        const val = parseFloat(input.value);
+                        if (!validateItemRate(val) && input.value !== '') {
+                            input.classList.add('error');
+                        } else {
+                            input.classList.remove('error');
+                        }
+                    }
+                    if (input.classList.contains('item-qty')) {
+                        const val = parseFloat(input.value);
+                        if (!validateItemQty(val) && input.value !== '') {
+                            input.classList.add('error');
+                        } else {
+                            input.classList.remove('error');
+                        }
+                    }
                     generateInvoice(false);
                 });
             });
@@ -640,17 +953,34 @@
             rows.forEach((row, index) => {
                 const particulars = row.querySelector(".item-particulars")?.value || "";
                 const hsn = row.querySelector(".item-hsn")?.value || "";
-                const rateVal = parseFloat(row.querySelector(".item-rate")?.value || "0");
-                const qtyVal = parseFloat(row.querySelector(".item-qty")?.value || "0");
-                const amount = rateVal * qtyVal;
+                const rateInput = row.querySelector(".item-rate");
+                const qtyInput = row.querySelector(".item-qty");
+                
+                // Validate and parse rate
+                const rateVal = parseFloat(rateInput?.value || "0");
+                if (!validateItemRate(rateVal) && rateInput?.value !== '') {
+                    rateInput?.classList.add('error');
+                } else {
+                    rateInput?.classList.remove('error');
+                }
+                
+                // Validate and parse quantity
+                const qtyVal = parseFloat(qtyInput?.value || "0");
+                if (!validateItemQty(qtyVal) && qtyInput?.value !== '') {
+                    qtyInput?.classList.add('error');
+                } else {
+                    qtyInput?.classList.remove('error');
+                }
+                
+                const amount = Math.max(0, rateVal) * Math.max(0, qtyVal);
                 if (particulars || amount > 0) {
                     items.push({
                         sn: index + 1,
-                        particulars,
-                        hsn,
-                        rate: rateVal,
-                        qty: qtyVal,
-                        amount
+                        particulars: particulars.trim(),
+                        hsn: hsn.trim(),
+                        rate: Math.max(0, rateVal),
+                        qty: Math.max(0, qtyVal),
+                        amount: amount
                     });
                 }
             });
@@ -715,98 +1045,280 @@
         }
 
         function generateInvoice(autoFillDate = true) {
-            const invoiceNumberInput = document.getElementById("invoiceNumber");
-            const dateInput = document.getElementById("invoiceDate");
-            const customerNameInput = document.getElementById("customerName");
-            const customerDetailsInput = document.getElementById("customerDetails");
-            const taxRateInput = document.getElementById("taxRate");
-            const notesInput = document.getElementById("notes");
+            try {
+                const invoiceNumberInput = document.getElementById("invoiceNumber");
+                const dateInput = document.getElementById("invoiceDate");
+                const customerNameInput = document.getElementById("customerName");
+                const customerDetailsInput = document.getElementById("customerDetails");
+                const taxRateInput = document.getElementById("taxRate");
+                const notesInput = document.getElementById("notes");
 
-            // Default date to today if empty
-            if (autoFillDate && !dateInput.value) {
-                const today = new Date().toISOString().slice(0, 10);
-                dateInput.value = today;
-            }
+                // Validate inputs
+                const invoiceNumber = (invoiceNumberInput.value || "").trim();
+                if (!validateInvoiceNumber(invoiceNumber)) {
+                    return;
+                }
 
-            const invoiceNumber = invoiceNumberInput.value || "044";
-            const invoiceDate = dateInput.value || new Date().toISOString().slice(0, 10);
-            const customerName = customerNameInput.value || "";
-            const customerDetails = customerDetailsInput.value || "";
-            const taxRate = parseFloat(taxRateInput.value || "0"); // total GST, e.g. 5
+                // Default date to today if empty
+                if (autoFillDate && !dateInput.value) {
+                    const today = new Date().toISOString().slice(0, 10);
+                    dateInput.value = today;
+                }
 
-            const items = getItemsFromForm();
+                const invoiceDate = dateInput.value || new Date().toISOString().slice(0, 10);
+                if (!validateDate(invoiceDate)) {
+                    return;
+                }
 
-            // Build items preview table
-            const previewBody = document.getElementById("previewItemsBody");
-            previewBody.innerHTML = "";
+                const customerName = (customerNameInput.value || "").trim();
+                if (!validateCustomerName(customerName)) {
+                    return;
+                }
 
-            let total = 0;
+                const customerDetails = (customerDetailsInput.value || "").trim();
+                const taxRate = parseFloat(taxRateInput.value || "0");
+                if (!validateTaxRate(taxRate)) {
+                    return;
+                }
 
-            if (items.length === 0) {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-          <td class="text-center">1</td>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td class="text-right">&nbsp;</td>
-          <td class="text-right">&nbsp;</td>
-          <td class="text-right">&nbsp;</td>
-        `;
-                previewBody.appendChild(tr);
-            } else {
-                items.forEach(item => {
-                    total += item.amount;
+                const items = getItemsFromForm();
+
+                // Build items preview table
+                const previewBody = document.getElementById("previewItemsBody");
+                previewBody.innerHTML = "";
+
+                let total = 0;
+
+                if (items.length === 0) {
                     const tr = document.createElement("tr");
+                    tr.setAttribute('role', 'row');
                     tr.innerHTML = `
-            <td class="text-center">${item.sn}</td>
-            <td>${item.particulars.replace(/\n/g, "<br>")}</td>
-            <td class="text-center">${item.hsn}</td>
-            <td class="text-right">${formatCurrency(item.rate)}</td>
-            <td class="text-right">${item.qty}</td>
-            <td class="text-right">${formatCurrency(item.amount)}</td>
-          `;
+          <td class="text-center" role="gridcell">1</td>
+          <td role="gridcell">&nbsp;</td>
+          <td role="gridcell">&nbsp;</td>
+          <td class="text-right" role="gridcell">&nbsp;</td>
+          <td class="text-right" role="gridcell">&nbsp;</td>
+          <td class="text-right" role="gridcell">&nbsp;</td>
+        `;
                     previewBody.appendChild(tr);
-                });
+                } else {
+                    items.forEach(item => {
+                        total += item.amount;
+                        const tr = document.createElement("tr");
+                        tr.setAttribute('role', 'row');
+                        
+                        // Sanitize particulars - convert newlines to <br> safely
+                        const safeParticulars = escapeHTML(item.particulars).replace(/\n/g, "<br>");
+                        const safeHsn = escapeHTML(item.hsn);
+                        
+                        tr.innerHTML = `
+            <td class="text-center" role="gridcell">${item.sn}</td>
+            <td role="gridcell">${safeParticulars}</td>
+            <td class="text-center" role="gridcell">${safeHsn}</td>
+            <td class="text-right" role="gridcell">${formatCurrency(item.rate)}</td>
+            <td class="text-right" role="gridcell">${item.qty}</td>
+            <td class="text-right" role="gridcell">${formatCurrency(item.amount)}</td>
+          `;
+                        previewBody.appendChild(tr);
+                    });
+                }
+
+                const sgstRate = taxRate / 2;
+                const cgstRate = taxRate / 2;
+                const sgstAmount = total * (sgstRate / 100);
+                const cgstAmount = total * (cgstRate / 100);
+                const grandTotal = total + sgstAmount + cgstAmount;
+
+                // Update preview header/meta - use textContent for safety
+                const previewInvoiceNumber = document.getElementById("previewInvoiceNumber");
+                if (previewInvoiceNumber) {
+                    previewInvoiceNumber.textContent = invoiceNumber || "044";
+                }
+
+                // Improved date formatting with error handling
+                let formattedDate = invoiceDate;
+                try {
+                    if (invoiceDate.includes("-")) {
+                        const parts = invoiceDate.split("-");
+                        if (parts.length === 3) {
+                            const [year, month, day] = parts;
+                            if (year && month && day && year.length === 4) {
+                                formattedDate = `${day}-${month}-${year}`;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Date formatting error:", e);
+                    formattedDate = invoiceDate;
+                }
+
+                const previewInvoiceDate = document.getElementById("previewInvoiceDate");
+                if (previewInvoiceDate) {
+                    previewInvoiceDate.textContent = formattedDate;
+                }
+
+                // Customer - use textContent for safety
+                const previewCustomerName = document.getElementById("previewCustomerName");
+                if (previewCustomerName) {
+                    previewCustomerName.textContent = customerName || "";
+                }
+                const previewCustomerDetails = document.getElementById("previewCustomerDetails");
+                if (previewCustomerDetails) {
+                    previewCustomerDetails.textContent = customerDetails || "";
+                }
+
+                // Summary - use textContent for safety
+                const previewTotal = document.getElementById("previewTotal");
+                if (previewTotal) {
+                    previewTotal.textContent = formatCurrency(total);
+                }
+                const previewSgstRate = document.getElementById("previewSgstRate");
+                if (previewSgstRate) {
+                    previewSgstRate.textContent = sgstRate.toFixed(1).replace(/\.0$/, "");
+                }
+                const previewCgstRate = document.getElementById("previewCgstRate");
+                if (previewCgstRate) {
+                    previewCgstRate.textContent = cgstRate.toFixed(1).replace(/\.0$/, "");
+                }
+                const previewSgstAmount = document.getElementById("previewSgstAmount");
+                if (previewSgstAmount) {
+                    previewSgstAmount.textContent = formatCurrency(sgstAmount);
+                }
+                const previewCgstAmount = document.getElementById("previewCgstAmount");
+                if (previewCgstAmount) {
+                    previewCgstAmount.textContent = formatCurrency(cgstAmount);
+                }
+                const previewGrandTotal = document.getElementById("previewGrandTotal");
+                if (previewGrandTotal) {
+                    previewGrandTotal.textContent = formatCurrency(grandTotal);
+                }
+
+                // Amount in words (integer rupees)
+                const previewAmountWords = document.getElementById("previewAmountWords");
+                if (previewAmountWords) {
+                    previewAmountWords.textContent = numberToWordsIndian(grandTotal);
+                }
+
+                // Notes - use textContent for safety
+                const notes = (notesInput.value || "").trim();
+                const notesPreview = document.getElementById("previewNotes");
+                if (notesPreview) {
+                    notesPreview.textContent = notes;
+                }
+            } catch (error) {
+                console.error("Error generating invoice:", error);
+                alert("An error occurred while generating the invoice. Please check your inputs and try again.");
             }
+        }
 
-            const sgstRate = taxRate / 2;
-            const cgstRate = taxRate / 2;
-            const sgstAmount = total * (sgstRate / 100);
-            const cgstAmount = total * (cgstRate / 100);
-            const grandTotal = total + sgstAmount + cgstAmount;
+        /**
+         * Generates a unique filename for the invoice
+         * Uses customer name or invoice number, or both if available
+         * @returns {string} - Sanitized filename
+         */
+        function generateInvoiceFilename() {
+            const invoiceNumber = document.getElementById("invoiceNumber")?.value?.trim() || "";
+            const customerName = document.getElementById("customerName")?.value?.trim() || "";
+            const dateInput = document.getElementById("invoiceDate")?.value || "";
+            
+            // Format date for filename (YYYYMMDD or use current date)
+            let dateStr = "";
+            if (dateInput) {
+                try {
+                    const date = new Date(dateInput);
+                    if (!isNaN(date.getTime())) {
+                        dateStr = date.toISOString().slice(0, 10).replace(/-/g, "");
+                    }
+                } catch (e) {
+                    // Use current date if parsing fails
+                    dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+                }
+            } else {
+                dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+            }
+            
+            // Sanitize filename - remove invalid characters
+            function sanitizeFilename(str) {
+                if (!str) return "";
+                return str
+                    .replace(/[<>:"/\\|?*\x00-\x1f]/g, "") // Remove invalid filename characters
+                    .replace(/\s+/g, "_") // Replace spaces with underscores
+                    .replace(/_{2,}/g, "_") // Replace multiple underscores with single
+                    .replace(/^_+|_+$/g, "") // Remove leading/trailing underscores
+                    .trim()
+                    .substring(0, 40); // Limit length to keep filename reasonable
+            }
+            
+            const sanitizedInvoiceNumber = sanitizeFilename(invoiceNumber);
+            const sanitizedCustomerName = sanitizeFilename(customerName);
+            
+            // Build filename: use invoice number and customer name if both available
+            // Otherwise use whichever is available, or generate unique name
+            let filename = "Invoice";
+            
+            if (sanitizedInvoiceNumber && sanitizedCustomerName) {
+                filename = `Invoice_${sanitizedInvoiceNumber}_${sanitizedCustomerName}_${dateStr}`;
+            } else if (sanitizedInvoiceNumber) {
+                filename = `Invoice_${sanitizedInvoiceNumber}_${dateStr}`;
+            } else if (sanitizedCustomerName) {
+                filename = `Invoice_${sanitizedCustomerName}_${dateStr}`;
+            } else {
+                // Fallback: use timestamp for uniqueness
+                filename = `Invoice_${dateStr}_${Date.now().toString().slice(-6)}`;
+            }
+            
+            return filename;
+        }
 
-            // Update preview header/meta
-            document.getElementById("previewInvoiceNumber").innerText = invoiceNumber;
-
-            const [year, month, day] = invoiceDate.split("-");
-            const formattedDate = (day && month && year)
-                ? `${day}-${month}-${year}`
-                : invoiceDate;
-            document.getElementById("previewInvoiceDate").innerText = formattedDate;
-
-            // Customer
-            document.getElementById("previewCustomerName").innerText = customerName || "";
-            document.getElementById("previewCustomerDetails").innerText = customerDetails || "";
-
-            // Summary
-            document.getElementById("previewTotal").innerText = formatCurrency(total);
-            document.getElementById("previewSgstRate").innerText = sgstRate.toFixed(1).replace(/\.0$/, "");
-            document.getElementById("previewCgstRate").innerText = cgstRate.toFixed(1).replace(/\.0$/, "");
-            document.getElementById("previewSgstAmount").innerText = formatCurrency(sgstAmount);
-            document.getElementById("previewCgstAmount").innerText = formatCurrency(cgstAmount);
-            document.getElementById("previewGrandTotal").innerText = formatCurrency(grandTotal);
-
-            // Amount in words (integer rupees)
-            document.getElementById("previewAmountWords").innerText = numberToWordsIndian(grandTotal);
-
-            // Notes
-            const notes = notesInput.value.trim();
-            const notesPreview = document.getElementById("previewNotes");
-            notesPreview.innerText = notes;
+        /**
+         * Sets the document title for printing (browsers use this as default PDF filename)
+         */
+        function setPrintTitle() {
+            const filename = generateInvoiceFilename();
+            const originalTitle = document.title;
+            document.title = filename;
+            
+            // Restore original title after a delay
+            setTimeout(() => {
+                document.title = originalTitle;
+            }, 1000);
         }
 
         function printInvoice() {
             generateInvoice(false);
+            setPrintTitle();
+            window.print();
+        }
+
+        /**
+         * Saves the invoice by triggering print with a unique filename
+         * The browser's print dialog will use the document title as default filename
+         */
+        function saveInvoice() {
+            // Validate that we have at least invoice number or customer name
+            const invoiceNumber = document.getElementById("invoiceNumber")?.value?.trim() || "";
+            const customerName = document.getElementById("customerName")?.value?.trim() || "";
+            
+            if (!invoiceNumber && !customerName) {
+                const proceed = confirm("No invoice number or customer name entered.\n\nThe file will be saved with a timestamp-based name.\n\nDo you want to continue?");
+                if (!proceed) {
+                    return;
+                }
+            }
+            
+            generateInvoice(false);
+            setPrintTitle();
+            
+            // Show a message to user about the filename
+            const filename = generateInvoiceFilename();
+            const message = `Invoice will be saved as:\n${filename}.pdf\n\n` +
+                          `Instructions:\n` +
+                          `1. In the print dialog, select "Save as PDF" or "Microsoft Print to PDF"\n` +
+                          `2. The filename "${filename}" will be suggested automatically\n` +
+                          `3. Click "Save" to save the invoice`;
+            
+            alert(message);
+            
             window.print();
         }
 
@@ -839,12 +1351,85 @@
         }
 
         window.addEventListener("load", () => {
-            // Pre-fill date today for form
-            const today = new Date().toISOString().slice(0, 10);
-            document.getElementById("invoiceDate").value = today;
+            try {
+                // Pre-fill date today for form
+                const today = new Date().toISOString().slice(0, 10);
+                const dateInput = document.getElementById("invoiceDate");
+                if (dateInput) {
+                    dateInput.value = today;
+                    dateInput.addEventListener("change", () => {
+                        validateDate(dateInput.value);
+                    });
+                }
 
-            // Add default empty item row
-            addItemRow();
+                // Add event listeners for validation on main form fields
+                const invoiceNumberInput = document.getElementById("invoiceNumber");
+                if (invoiceNumberInput) {
+                    invoiceNumberInput.addEventListener("blur", () => {
+                        validateInvoiceNumber(invoiceNumberInput.value);
+                    });
+                    invoiceNumberInput.addEventListener("input", () => {
+                        clearError('invoiceNumber');
+                    });
+                }
+
+                const customerNameInput = document.getElementById("customerName");
+                if (customerNameInput) {
+                    customerNameInput.addEventListener("blur", () => {
+                        validateCustomerName(customerNameInput.value);
+                    });
+                    customerNameInput.addEventListener("input", () => {
+                        clearError('customerName');
+                    });
+                }
+
+                const taxRateInput = document.getElementById("taxRate");
+                if (taxRateInput) {
+                    taxRateInput.addEventListener("blur", () => {
+                        validateTaxRate(parseFloat(taxRateInput.value || "0"));
+                    });
+                    taxRateInput.addEventListener("input", () => {
+                        clearError('taxRate');
+                        generateInvoice(false);
+                    });
+                }
+
+                // Add event listeners for auto-update on main form fields
+                const customerDetailsInput = document.getElementById("customerDetails");
+                if (customerDetailsInput) {
+                    customerDetailsInput.addEventListener("input", () => {
+                        generateInvoice(false);
+                    });
+                }
+
+                const notesInput = document.getElementById("notes");
+                if (notesInput) {
+                    notesInput.addEventListener("input", () => {
+                        generateInvoice(false);
+                    });
+                }
+
+                // Add default empty item row
+                addItemRow();
+                
+                // Initial invoice generation
+                generateInvoice(false);
+                
+                // Set document title before printing (for PDF filename)
+                let originalTitle = document.title;
+                window.addEventListener("beforeprint", () => {
+                    originalTitle = document.title;
+                    setPrintTitle();
+                });
+                
+                window.addEventListener("afterprint", () => {
+                    if (originalTitle) {
+                        document.title = originalTitle;
+                    }
+                });
+            } catch (error) {
+                console.error("Error initializing form:", error);
+            }
         });
     </script>
 </body>
